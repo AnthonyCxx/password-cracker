@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
     validateCmdArgs(argc);                                       //Validate the commandline arguments (check that a file WAS provided)
     loadHashes(hashes, argv[1]);                                //Load in all the hashes from the file
-    crackHashes(hashes, "top-10-million-passwords.txt");      //Attempt to crack all the hashes
+    crackHashes(hashes, "top-10-million-passwords.txt");       //Attempt to crack all the hashes
     printHashTable(hashes);                                   //Print all the hashes and their cracked equivalents as a table
 
     return 0;
@@ -85,7 +85,7 @@ void loadHashes(hashmap& hashes, std::string filename)
     //Error-handling
     if (!hashed_passwords.good())
     {
-        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting...\n";
+        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 2...\n";
         exit(2);
     }
     
@@ -110,7 +110,7 @@ void crackHashes(hashmap& hashes, std::string filename)
     //Validate dictionary file
     if (!dictionary.good())
     {
-        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting...\n";
+        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 3...\n";
         exit(3);
     }
 
@@ -134,12 +134,9 @@ void printHashTable(const hashmap& hashes)
     std::cout << std::setw(16) << "******* PASSWORD HASHES ********" << " ***** CRACKED PASSWORDS *****\n"
                                << "================================" << " =============================\n";
     
-    //Print all the password hashes + cracked password (if successful, else '// NOT FOUND //'
+    //Print all the password hashes + cracked password (if successful, else <empty str>)
     for(const auto& map_entry : hashes)
     {
         std::cout << map_entry.first << " " << (map_entry.second.has_value() ? map_entry.second.value() : "") << '\n';
     }
-
-    //Table end
-    std::cout << "***** END OF PASSWORD LIST *****\n";
 }
