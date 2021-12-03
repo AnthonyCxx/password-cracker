@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     auto md5hasher = std::make_unique<md5wrapper>();
 
     //Variables
-    hashmap hashes;    //Set of all the hashes to crack
+    hashmap hashes;    //map of all the hashes to crack (password hash -> optional<cracked password value>)
 
     validateCmdArgs(argc);                   //Validate the commandline arguments (check that a file WAS provided)
     loadHashes(hashes, argv[1]);            //Load in all the hashes from the file
