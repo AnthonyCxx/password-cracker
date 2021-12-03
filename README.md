@@ -1,5 +1,5 @@
 # Password Cracker in C++
-An MD5 password cracker built in C++
+An MD5 password cracker built in C++ 
 
 # Compilatition and Execution
 
@@ -8,3 +8,6 @@ Output goes to the console, which also means it can be redirected to a file. The
 original hashes and cracked passwords separated by a space. If a hash was not cracked, the space under the column _CRACKED PASSWORDS_ should be empty.
 
 # Process
+
+# License
+This project is available under an MIT license; we are not responsible for how you use this project.
