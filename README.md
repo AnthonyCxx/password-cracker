@@ -1,7 +1,9 @@
 # Password Cracker in C++
-An MD5 password cracker built in C++ 
+An MD5 password cracker built in C++17.
 
 # Compilatition and Execution
+- Compilation: `g17 main.cpp ./hashlib++/*.cpp`
+- Execution: `./a.out hashes.txt`
 
 # Output and Piping
 Output goes to the console, which also means it can be redirected to a file. The output table is designed to be friendly for piping, so a simple `./a.out hashes.txt | awk 'NR > 3'` skips the progress counter and table header, giving you just the 
