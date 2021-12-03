@@ -10,4 +10,4 @@ original hashes and cracked passwords separated by a space. If a hash was not cr
 # Process
 
 # License
-This project is available under an MIT license; we are not responsible for how you use this password cracker.
+This project is available under an MIT license; by using this password cracker, you agree to take full responsiblity for how you use it.
