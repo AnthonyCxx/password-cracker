@@ -31,24 +31,22 @@ typedef std::unordered_map<std::string, std::optional<std::string>> hashmap;
 
 
 //Function prototypes
-void validateCmdArgs(int argc);
-void loadHashes(hashmap hashes, std::string filename);
+void validateCmdArgs(int argc);                             //Ensure that there was a file to read from
+void loadHashes(hashmap hashes, std::string filename);     //Load the hashes from the file
+
 
 
 // DRIVER CODE //
 int main(int argc, char* argv[])
 {
     //MD5 hash generator
-    auto md5hasher = std::make_unique<hashwrapper>();
+    auto md5hasher = std::make_unique<md5wrapper>();
 
     //Variables
     hashmap hashes;    //Set of all the hashes to crack
 
-
-    std::cout << md5hasher->getHashFromString("Hello world") << '\n';
-
-    //validateCmdArgs(argc);                   //Validate the commandline arguments (check that a file WAS provided)
-    //loadHashes(hashes, argv[1]);            //Load in all the hashes from the file
+    validateCmdArgs(argc);                   //Validate the commandline arguments (check that a file WAS provided)
+    loadHashes(hashes, argv[1]);            //Load in all the hashes from the file
 
     return 0;
 }
@@ -71,7 +69,7 @@ inline void validateCmdArgs(int argc)
     
     if (argc > 2)
     {
-        std::clog << "Non-fatal error: too many arguments.\n"; 
+        std::clog << "Non-fatal error: too many arguments -- only filename (first arg) accepted.\n"; 
     }
 }
 
@@ -86,7 +84,7 @@ void loadHashes(hashmap hashes, std::string filename)
     //Error-handling
     if (!inFile.good())
     {
-        std::clog << "The file " << std::quoted(filename) << " could not be found. Exiting...\n";
+        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting...\n";
         exit(2);
     }
     
