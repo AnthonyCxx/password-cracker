@@ -1,5 +1,5 @@
 # Password Cracker in C++
-An MD5 password cracker build in C++
+An MD5 password cracker built in C++
 
 # Compilatition and Execution
 
