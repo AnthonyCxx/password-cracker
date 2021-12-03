@@ -8,6 +8,10 @@ Output goes to the console, which also means it can be redirected to a file. The
 original hashes and cracked passwords separated by a space. If a hash was not cracked, the space under the column _CRACKED PASSWORDS_ should be empty.
 
 # Process
+The process for cracking the passwords is pretty straight-forward.
+1. Load all the hashes from the file into a map, associating them with an `std::optional<std::string>`, which is the cracked password
+2. Attempt to crack the passwords by hashing every password in the given dictionary (here: top-10-million-passwords.txt)
+3. Print all the password hashes and the uncovered passwords (where `std::optional<std::string>` has a value)
 
 # License
 This project is available under an MIT license; by using this password cracker, you agree to take full responsiblity for how you use it.
