@@ -24,6 +24,9 @@
 //Native C Libraries
 #include <cstdlib>      //Contains exit()
 
+//Custom Libraries (by yours truly :D)
+#include "arg-parser/parser.hpp"
+
 //External Libraries (dependencies)
 #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
 
