@@ -35,22 +35,32 @@ typedef std::unordered_map<std::string, std::optional<std::string>> hashmap;
 
 
 //Function prototypes
-void validateCmdArgs(int argc);                               //Ensure that there was a file to read from
-void loadHashes(hashmap& hashes, std::string filename);      //Load the hashes from the file
-void crackHashes(hashmap& hashes, std::string filename);    //(Attempt to) crack all the hashes
-void printHashTable(const hashmap& hashes);                //Print all the hashes + cracked passwords as a table
+void process_args(int argc, arg_parser::Parser&);              //Ensure that there was a file to read from
+void load_hashes(hashmap& hashes, std::string filename);      //Load the hashes from the file
+void crack_hashes(hashmap& hashes, std::string filename);    //(Attempt to) crack all the hashes
+void print_hash_table(const hashmap& hashes);               //Print all the hashes + cracked passwords as a table
 
 
 // DRIVER CODE //
 int main(int argc, char* argv[])
 {
+    //Commandline argument parser + argument list
+    arg_parser::Parser parser(
+                                arg_parser::Argument("--help", false),          //required=false
+                                arg_parser::Argument("-h", false),             //required=false
+                                arg_parser::Argument("--hashfile", true)      //required=true
+                             );
+
     //Variables
     hashmap hashes;    //map of all the hashes to crack (password hash -> optional<cracked password value>)
 
-    validateCmdArgs(argc);                                       //Validate the commandline arguments (check that a file WAS provided)
-    loadHashes(hashes, argv[1]);                                //Load in all the hashes from the file
-    crackHashes(hashes, "top-10-million-passwords.txt");       //Attempt to crack all the hashes
-    printHashTable(hashes);                                   //Print all the hashes and their cracked equivalents as a table
+    //Parse the commandline arguments
+    parser.parse(argc, argv);
+
+    process_args(argc, parser);                                   //Validate the commandline arguments (check that a file WAS provided)
+    load_hashes(hashes, parser["--hashfile"].params.at(0).data());         //Load in all the hashes from the file
+    crack_hashes(hashes, "top-10-million-passwords.txt");       //Attempt to crack all the hashes
+    print_hash_table(hashes);                                  //Print all the hashes and their cracked equivalents as a table
 
     return 0;
 }
@@ -62,24 +72,55 @@ int main(int argc, char* argv[])
  // *********** FUNTION IMPLEMENTATIONS **********  //
 // =============================================== //
 
-//Validates the commandline arguments (so 'loadHashes' doesn't have it)
-inline void validateCmdArgs(int argc)
+//Validates the commandline arguments (so 'load_hashes' doesn't have it)
+inline void process_args(int argc, arg_parser::Parser& parser)
 {
-    if (argc < 2)
+    //If no commandline arguments were provided OR the user asked for help
+    if (argc == 1 or parser["-h"].set or parser["--help"].set)   //Done in shortest order or evaluation for short-circuiting
     {
-        std::clog << "usage: ./a.out <file>\n";
-        exit(1);
+        //This is a lot to print lmao
+		std::cout << " ___  ________ _____   _   _           _       _____                _              \n"
+			      << " |  \\/  |  _  \\  ___| | | | |         | |     /  __ \\              | |             \n"
+	              << " | .  . | | | |___ \\  | |_| | __ _ ___| |__   | /  \\/_ __ __ _  ___| | _____ _ __  \n"
+		          << " | |\\/| | | | |   \\ \\ |  _  |/ _` / __| '_ \\  | |   | '__/ _` |/ __| |/ / _ \\ '__| \n"
+		          << " | |  | | |/ //\\__/ / | | | | (_| \\__ \\ | | | | \\__/\\ | | (_| | (__|   <  __/ |    \n"
+	              << " \\_|  |_/___/ \\____/  \\_| |_/\\__,_|___/_| |_|  \\____/_|  \\__,_|\\___|_|\\_\\___|_|    \n"
+ 				  
+				  << "\n\nWelcome to an MD5 Password Cracker.\n" 
+                  << "To crack a list of MD5 Hashed Passwords, run \'./a.out --hashfile <password_hashlist>\'\n"
+                  << "> There is an example list of hashes provided as \'Hashes.txt\'\n"
+
+                  << "\n\nOptions: \n"
+                  << "========\n"
+                  
+                  << "-h or --help:\n"
+                  << "> Displays this help screen\n"
+                  << "> Required=false\n\n"
+                  
+                  << "--hashfile + filename:\n"
+                  << "> following filename is the list of password hashes to crack\n"
+                  << "> Required=true\n"
+
+
+				  << "\n\nContributors: Ethan Cox and Michael Gain :)\n";
+
+        exit(0);    //Exiting early via help is not erroneous
     }
-    
-    if (argc > 2)
+
+    //Throw std::invalid_argument if not all the required arguments are set
+    parser.throw_if_req_not_set();
+
+
+    if (!parser["--hashfile"].set)
     {
-        std::clog << "Non-fatal error: too many arguments -- only filename (first arg) accepted.\n"; 
+        std::clog << "usage: ./a.out <password_hashlist>\n";
+        exit(1);
     }
 }
 
 
 //Load the hashes from the given file
-void loadHashes(hashmap& hashes, std::string filename)
+void load_hashes(hashmap& hashes, std::string filename)
 {
     //Infile to read in hashed passwords from + temp str to store individual passwords
     std::ifstream hashed_passwords(filename);
@@ -102,7 +143,7 @@ void loadHashes(hashmap& hashes, std::string filename)
 
 
 //(Attemp to) crack all the passwords
-void crackHashes(hashmap& hashes, std::string filename)
+void crack_hashes(hashmap& hashes, std::string filename)
 {   
     //Variables
     auto md5hasher = std::make_unique<md5wrapper>();       //MD5 Hash Generator
@@ -120,7 +161,7 @@ void crackHashes(hashmap& hashes, std::string filename)
     //Try every password in the password list
     while (std::getline(dictionary, password))
     {
-        std::cout << "Progress: " << counter++ << '\r';
+        std::cout << "Progress: " << ++counter << '\r';
 
         std::string password_hash = std::move(md5hasher->getHashFromString(password));
 
@@ -131,7 +172,7 @@ void crackHashes(hashmap& hashes, std::string filename)
 }
 
 //Print a the map of the hashed passwords and the cracked passwords as a table
-void printHashTable(const hashmap& hashes)
+void print_hash_table(const hashmap& hashes)
 {
     //Table header
     std::cout << std::setw(16) << "******* PASSWORD HASHES ********" << " ***** CRACKED PASSWORDS *****\n"
