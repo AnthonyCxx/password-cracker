@@ -21,7 +21,7 @@ namespace arg_parser
 
         public:
             //Special methods
-            Argument(std::string = "", unsigned short = 0, std::string = "", bool = false);    //Constructor (default +  parameterized)
+            Argument(std::string = "", unsigned short = 0, bool = false, std::string = "");    //Constructor (default +  parameterized)
 
             //General methods
             [[nodiscard]] bool is_set() const noexcept;     
@@ -40,7 +40,7 @@ namespace arg_parser
     // ***** SPECIAL METHODS ***** //
 
     //Constructor (default + parameterized)
-    Argument::Argument(std::string in_name, unsigned short param_count, std::string description, bool in_required)
+    Argument::Argument(std::string in_name, unsigned short param_count, bool in_required, std::string description)
     {
         name = in_name;
         num_of_params = param_count;

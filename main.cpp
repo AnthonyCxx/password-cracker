@@ -7,7 +7,7 @@
 
     Compilation Instructions: 
         > Windows: g++ -std=c++17 *.cpp .\hashlib++\*.cpp
-        > Linux: g++ -std=c++17 *.cpp ./hashlib++/*.cpp
+        > Linux:   g++ -std=c++17 *.cpp ./hashlib++/*.cpp
 
     Description: this program is a password cracker for md5 hashes. Is it realistic? No, but it's still a good exercise.
 */
@@ -46,10 +46,10 @@ int main(int argc, char* argv[])
 {
     //Commandline argument parser + argument list
     arg_parser::Parser parser(
-                                //parameter details:  cmd arg, number of parameters, description, required=?
-                                arg_parser::Argument("--help", 0, "displays the help screen", false),            
-                                arg_parser::Argument("-h", 0, "displays the help screen", false),                 
-                                arg_parser::Argument("--hashfile", 1, "takes the list of hashed passwords", true)   
+                                //Format:  cmd arg=string, # of parameters=uint, is_required=bool, description=string
+                                arg_parser::Argument("--help", 0, false, "displays the help screen"),            
+                                arg_parser::Argument("-h", 0, false, "displays the help screen"),                 
+                                arg_parser::Argument("--hashfile", 1, true, "takes the list of hashed passwords")   
                              );
 
     //Variables
@@ -104,11 +104,10 @@ inline void process_args(int argc, arg_parser::Parser& parser)
     }
 
     //Throw std::invalid_argument if not all the required arguments are set + parameters needed
-    parser.throw_if_req_not_set();
-    parser.throw_if_less_than_min_args();
+    parser.validate_args();
 
     //Make sure the user provided a file
-    if (!parser["--hashfile"].is_set())
+    if (not parser["--hashfile"].is_set())
     {
         std::clog << "usage: ./a.out <password_hashlist>\n";
         exit(1);
@@ -151,8 +150,8 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename)
     //Validate dictionary file
     if (!dictionary.good())
     {
-        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 3...\n";
-        exit(3);
+        std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 2...\n";
+        exit(2);
     }
 
     //Try every password in the password list

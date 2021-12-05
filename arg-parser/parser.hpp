@@ -32,8 +32,7 @@ namespace arg_parser
 
             //Functions
             void parse(int, char*[]);
-            void throw_if_req_not_set() const;
-            void throw_if_less_than_min_args() const;
+            void validate_args() const;
             void print_arg_info() const;
 
             //Overloaded operators
@@ -56,24 +55,34 @@ namespace arg_parser
         static_assert((std::is_same_v<Args, Argument> and ...), "all arguments of the Parser constructor must be \'Argument\' objects!");
 
         //Insert all the arguments into the map
-        (arg_map.insert({args.name, std::move(args)}), ...);   //move arguments since they own resources
+        (arg_map.insert({args.name, std::move(args)}), ...);   //move arguments since they own resources (and are temp objects)
     }
 
     //Parse the commandline arguments (toggle proper values in the map)
     void Parser::parse(int argc, char* argv[])
     {
-        //Current commandline argument
+        //Current commandline argument + regex pattern for arguments
         std::string current_arg;
+        const std::regex arg_pattern(R"((-|--)[a-zA-Z-]+)");  //Any series of characters or hyphens that follows a '-' or '--'
 
         //Process all the arguments
         for(int i=1; i < argc; ++i)   //safe to use 'int' over 'std::size_t' because max value of 'argc' is INT_MAX
         {
-            if (arg_map.find(argv[i]) != arg_map.end())  //second condition prevents injection of new args
+            //If parsing a commandline argument and not a parameter
+            if (std::regex_match(argv[i], arg_pattern))
             {
-                current_arg = argv[i];                  //Set the current argument
-                arg_map[current_arg].set = true;       //Mark the argument as seen
+                if (arg_map.find(argv[i]) != arg_map.end())  //second condition prevents injection of new args
+                {
+                    current_arg = argv[i];                  //Set the current argument
+                    arg_map[current_arg].set = true;       //Mark the argument as seen
+                }
+                else  //unrecognized arguments are cause for exiting
+                {
+                    std::cout << "**ERROR**: unrecognized argument: " << argv[i] << '\n';
+                    exit(1);
+                }
             }
-            else  //add whatever follows to the list of current arguments
+            else  //add the parameter follows to the parameters of the current argument
             {
                 if (arg_map.find(current_arg) != arg_map.end())      //Protect against stray input (parameters without arguments)
                     arg_map[current_arg].params.push_back(argv[i]);
@@ -90,47 +99,39 @@ namespace arg_parser
     }
 
     //Throw an error if required arguments are not set
-    void Parser::throw_if_req_not_set() const
+    void Parser::validate_args() const
     {
-        //List containing all the required arguments
-        std::string error_list;
+        //List of errors (required + disincluded args/params) for the arguments and parameters
+        std::string arg_errors;
+        std::string param_errors;
 
         //Ensure all required arguments were provided
-        std::for_each(arg_map.cbegin(), arg_map.cend(), [&error_list](auto arg) 
+        std::for_each(arg_map.cbegin(), arg_map.cend(), [&arg_errors, &param_errors](auto arg)   //Equal to [&](auto arg)
                                                         { 
                                                             if (arg.second.required and not arg.second.set) 
-                                                                error_list += arg.second.name + ", ";
+                                                                arg_errors += arg.second.name + ", ";
+
+                                                            if (arg.second.set and arg.second.params.size() < arg.second.num_of_params) 
+                                                                param_errors += arg.second.name + ": " + std::to_string(arg.second.num_of_params) + " parameters, ";
                                                         });
 
-        
-        if (error_list.length() != 0)  //if (error_list.length())
+        //Valdiate that all required arguments were included
+        if (arg_errors.length() != 0)  //if (error_list.length())
         {
-            std::clog << "Fatal error, required arguments not included: " << error_list << '\n';
+            std::clog << "**Error**: required arguments not included: " << arg_errors << '\n';
+            exit(1);
+        }
+
+
+        //Validate that all required parameters for all arguments were included
+        if (param_errors.length() != 0)  //if (error_list.length())
+        {
+            std::clog << "**Error**: required parameters not included: " << param_errors << '\n';
             exit(1);
         }
     }
 
-    //Throw if less than the minimum arguments was provided
-    void Parser::throw_if_less_than_min_args() const
-    {
-        //List containing all the required arguments
-        std::string error_list;
-
-        //Ensure all required arguments were provided
-        std::for_each(arg_map.cbegin(), arg_map.cend(), [&error_list](auto arg) 
-                                                        { 
-                                                            if (arg.second.params.size() < arg.second.num_of_params) 
-                                                                error_list += arg.second.name + ": " + std::to_string(arg.second.num_of_params) + " parameters, ";
-                                                        });
-
-        
-        if (error_list.length() != 0)  //if (error_list.length())
-        {
-            std::clog << "Fatal error, required parameters not included: " << error_list << '\n';
-            exit(1);
-        }
-    }
-
+    //Print the information about all the arguments -- useful for writing help menus
     void Parser::print_arg_info() const
     {
         for(auto itr=arg_map.begin(); itr != arg_map.end(); ++itr)
@@ -139,6 +140,9 @@ namespace arg_parser
         }
     }
     
+    
+
+
     // FOR DEBUGGING //
     void Parser::print_map() const
     {
