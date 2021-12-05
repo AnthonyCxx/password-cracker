@@ -38,7 +38,7 @@ typedef std::unordered_map<std::string, std::optional<std::string>> passwd_hashm
 void process_args(int argc, arg_parser::Parser&);                     //Ensure that there was a file to read from
 void load_hashes(passwd_hashmap& hashes, std::string filename);      //Load the hashes from the file
 void crack_hashes(passwd_hashmap& hashes, std::string filename);    //(Attempt to) crack all the hashes
-void print_hash_table(const passwd_hashmap& hashes);               //Print all the hashes + cracked passwords as a table
+void print_hashes(const passwd_hashmap& hashes);                   //Print all the hashes + cracked passwords as a table
 
 
 // DRIVER CODE //
@@ -46,9 +46,10 @@ int main(int argc, char* argv[])
 {
     //Commandline argument parser + argument list
     arg_parser::Parser parser(
-                                arg_parser::Argument("--help", false),          //required=false
-                                arg_parser::Argument("-h", false),             //required=false
-                                arg_parser::Argument("--hashfile", true)      //required=true
+                                //parameter details:  cmd arg, number of parameters, description, required=?
+                                arg_parser::Argument("--help", 0, "displays the help screen", false),            
+                                arg_parser::Argument("-h", 0, "displays the help screen", false),                 
+                                arg_parser::Argument("--hashfile", 1, "takes the list of hashed passwords", true)   
                              );
 
     //Variables
@@ -58,9 +59,9 @@ int main(int argc, char* argv[])
     parser.parse(argc, argv);
 
     process_args(argc, parser);                                         //Validate the commandline arguments (check that a file WAS provided)
-    load_hashes(hashes, parser["--hashfile"].params.at(0).data());     //Load in all the hashes from the file
+    load_hashes(hashes, parser["--hashfile"][0].data());               //Load in all the hashes from the file
     crack_hashes(hashes, "top-10-million-passwords.txt");             //Attempt to crack all the hashes
-    print_hash_table(hashes);                                        //Print all the hashes and their cracked equivalents as a table
+    print_hashes(hashes);                                            //Print all the hashes and their cracked equivalents as a table
 
     return 0;
 }
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
 inline void process_args(int argc, arg_parser::Parser& parser)
 {
     //If no commandline arguments were provided OR the user asked for help
-    if (argc == 1 or parser["-h"].set or parser["--help"].set)   //Done in shortest order or evaluation for short-circuiting
+    if (argc == 1 or parser["-h"].is_set() or parser["--help"].is_set())   //Done in shortest order or evaluation for short-circuiting
     {
         //It's dangerous to go alone! Take this help screen with you.
 		std::cout << " ___  ________ _____   _   _           _       _____                _              \n"
@@ -91,27 +92,23 @@ inline void process_args(int argc, arg_parser::Parser& parser)
                   << "> There is an example list of hashes provided as \'Hashes.txt\'\n"
 
                   << "\n\nOptions: \n"
-                  << "========\n"
-                  
-                  << "-h or --help:\n"
-                  << "> Displays this help screen\n"
-                  << "> Required=false\n\n"
-                  
-                  << "--hashfile + filename:\n"
-                  << "> following filename is the list of password hashes to crack\n"
-                  << "> Required=true\n"
+                  << "========\n";
 
 
-				  << "\n\nContributors: Ethan Cox and Michael Gain :)\n";
+                  //Print the information for each of the arguments
+                  parser.print_arg_info();
+
+				  std::cout << "\nContributors: Ethan Cox and Michael Gain :)\n";
 
         exit(0);    //Exiting early via help is not erroneous
     }
 
-    //Throw std::invalid_argument if not all the required arguments are set
+    //Throw std::invalid_argument if not all the required arguments are set + parameters needed
     parser.throw_if_req_not_set();
+    parser.throw_if_less_than_min_args();
 
     //Make sure the user provided a file
-    if (!parser["--hashfile"].set || parser["--hashfile"].params.size() == 0)
+    if (!parser["--hashfile"].is_set())
     {
         std::clog << "usage: ./a.out <password_hashlist>\n";
         exit(1);
@@ -123,18 +120,18 @@ inline void process_args(int argc, arg_parser::Parser& parser)
 void load_hashes(passwd_hashmap& hashes, std::string filename)
 {
     //Infile to read in hashed passwords from + temp str to store individual passwords
-    std::ifstream hashed_passwords(filename);
+    std::ifstream password_hashlist(filename);
     std::string password;
 
     //Error-handling
-    if (!hashed_passwords.good())
+    if (!password_hashlist.good())
     {
         std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 2...\n";
         exit(2);
     }
     
     //Until you reach the end of the file
-    while (std::getline(hashed_passwords, password))   //implicit std::noskipws
+    while (std::getline(password_hashlist, password))   //implicit std::noskipws
     {
         //Move the hashed password into the map, along with an empty std::optional<> object
         hashes.insert({std::move(password), std::nullopt});
@@ -172,7 +169,7 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename)
 }
 
 //Print a the map of the hashed passwords and the cracked passwords as a table
-void print_hash_table(const passwd_hashmap& hashes)
+void print_hashes(const passwd_hashmap& hashes)
 {
     //Table header
     std::cout << std::setw(16) << "******* PASSWORD HASHES ********" << " ***** CRACKED PASSWORDS *****\n"
