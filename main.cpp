@@ -6,8 +6,8 @@
     C++ Version: C++17
 
     Compilation Instructions: 
-        > Windows: g++ -std=c++17 *.cpp .\hashlib++\*.cpp
-        > Linux:   g++ -std=c++17 *.cpp ./hashlib++/*.cpp
+        > Windows: g++ -std=c++17 *.cpp .\hashlib++_md5\*.cpp
+        > Linux:   g++ -std=c++17 *.cpp ./hashlib++_md5/*.cpp
 
     Description: this program is a password cracker for md5 hashes. Is it realistic? No, but it's still a good exercise.
 */
@@ -44,7 +44,7 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename);    //(Attempt t
 void print_hashes(const passwd_hashmap& hashes);                   //Print all the hashes + cracked passwords as a table
 void crack_brute_hash(passwd_hashmap& hashes, const size_t& size = 5);   //(Attempt to) crack all the hashes with passwords of a given size 
                                                                  //(probably dont want to run larger than 5 or youll have time to discover the cure to cancer)                                     
-void gen_hash_to_file(std::string& file_name, std::initializer_list<std::string> plaintext);         //Hashes plaintext
+void gen_hash_to_file(std::string& file_name, std::initializer_list<std::string> plaintext);         //Hashes plaintext and puts in a file
 
 // DRIVER CODE //
 int main(int argc, char* argv[])
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     //Variables
     passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
     std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
-	size_t size = (parser["--brute"].is_set() ? static_cast<size_t>(parser["--brute"][0].data()[0] - '0') : (size_t)5); // I think i hate myself for writing this. I highly doubt this is type safe at all but ¯\_(ツ)_/¯
+	size_t size = (parser["--brute"].is_set() ? std::stoi(parser["--brute"][0].data()) : (size_t)5);
 
     load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
 
