@@ -26,7 +26,7 @@
 
 //Custom Libraries (by yours truly :D)
 #include "arg-parser/parser.hpp"
-#include "permuter/permute.hpp"
+#include "permutor/permute.hpp"
 
 //External Libraries (dependencies)
 #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
@@ -56,27 +56,16 @@ int main(int argc, char* argv[])
 
     //Variables
     passwd_hashmap hashes;    //map of all the hashes to crack (password hash -> optional<cracked password value>)
+    // std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
 
     //Parse the commandline arguments
     parser.parse(argc, argv);
-<<<<<<< Updated upstream
-
-    process_args(argc, parser);                                         //Validate the commandline arguments (check that a file WAS provided)
-    load_hashes(hashes, parser["--hashfile"][0].data());               //Load in all the hashes from the file
-    crack_hashes(hashes, "top-10-million-passwords.txt");             //Attempt to crack all the hashes
-    print_hashes(hashes);                                            //Print all the hashes and their cracked equivalents as a table
-=======
     process_args(argc, parser);                                    //Validate the commandline arguments (check that a file WAS provided)
-
-    //Variables
-    passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
-    // std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
 
     load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
     // crack_hashes(hashes, dictionary);                            //Attempt to crack all the hashes
     crack_brute_hash(hashes, (size_t)5);
 	print_hashes(hashes);                                       //Print all the hashes and their cracked equivalents as a table
->>>>>>> Stashed changes
 
     return 0;
 }
