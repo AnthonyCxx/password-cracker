@@ -11,6 +11,9 @@
 
     Description: this program is a password cracker for md5 hashes. Is it realistic? No, but it's still a good exercise.
 */
+ 
+//Native C libraries
+#include <cstdlib>      //contains exit()
 
 //Native C++ Libraries
 #include <iostream>              //For input and output operations
@@ -20,18 +23,15 @@
 #include <optional>          //For optional values (in the map)
 #include <memory>           //For smart pointers
 #include <algorithm>       //The cardinal sin in an algorithms class 
-#include <vector>          //I know this is slow but im only using it for writing hashes to a file
-
-//Native C Libraries
-#include <cstdlib>      //Contains exit()
-
-//Custom Libraries (by yours truly :D)
-#include "arg-parser/parser.hpp"
-#include "permuter/permute.hpp"
+#include <vector>         //I know this is slow but im only using it for writing hashes to a file
 
 //External Libraries (dependencies)
 // #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
 #include "hashlib++_md5/hashlibpp.h" //this directory contains a modified version of the hashlib++ library which only contains the code for md5. hopefully this will speed up compilation
+
+//Custom Libraries (by yours truly :D)
+#include "arg-parser/parser.hpp"          //By Ethan
+#include "permuter/permute.hpp"          //By Michael
 
 //Typedefs
 typedef std::unordered_map<std::string, std::optional<std::string>> passwd_hashmap; 
@@ -110,6 +110,7 @@ inline void process_args(int argc, arg_parser::Parser& parser)
 
 
                   //Print the information for each of the arguments
+           
                   parser.print_arg_info();
 
 				  std::cout << "\nContributors: Ethan Cox and Michael Gain :)\n";
@@ -121,7 +122,7 @@ inline void process_args(int argc, arg_parser::Parser& parser)
     parser.validate_args();
 
     //Make sure the user provided a file
-    if (! parser["--hashfile"].is_set())
+    if (not parser["--hashfile"].is_set())
     {
         std::clog << "usage: ./a.out <password_hashlist>\n";
         exit(1);

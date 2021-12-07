@@ -52,7 +52,7 @@ namespace arg_parser
     Parser::Parser(Args&&... args)
     {
         //Make sure all the arguments are 'Argument' objects (if using C++20, change this to a 'requires' clause)
-        static_assert((std::is_same_v<Args, Argument> and ...), "all arguments of the Parser constructor must be \'Argument\' objects!");
+        static_assert((std::is_same_v<Args, Argument> and ...), "[[ARGPARSER]] all arguments of the Parser constructor must be \'Argument\' objects!");
 
         //Insert all the arguments into the map
         (arg_map.insert({args.name, std::move(args)}), ...);   //move arguments since they own resources (and are temp objects)
@@ -78,7 +78,7 @@ namespace arg_parser
                 }
                 else  //unrecognized arguments are cause for exiting
                 {
-                    std::cout << "**ERROR**: unrecognized argument: " << argv[i] << '\n';
+                    std::cout << "[[ARGPARSER]] **ERROR**: unrecognized argument: " << argv[i] << '\n';
                     exit(1);
                 }
             }
@@ -118,7 +118,7 @@ namespace arg_parser
         //Valdiate that all required arguments were included
         if (arg_errors.length() != 0)  //if (error_list.length())
         {
-            std::clog << "**Error**: required arguments not included: " << arg_errors << '\n';
+            std::clog << "[[ARGPARSER]] **Error**: required arguments not included: " << arg_errors << '\n';
             exit(1);
         }
 
@@ -126,7 +126,7 @@ namespace arg_parser
         //Validate that all required parameters for all arguments were included
         if (param_errors.length() != 0)  //if (error_list.length())
         {
-            std::clog << "**Error**: required parameters not included: " << param_errors << '\n';
+            std::clog << "[[ARGPARSER]] **Error**: required parameters not included: " << param_errors << '\n';
             exit(1);
         }
     }
