@@ -20,6 +20,7 @@
 #include <optional>          //For optional values (in the map)
 #include <memory>           //For smart pointers
 #include <algorithm>       //The cardinal sin in an algorithms class 
+#include <vector>          //I know this is slow but im only using it for writing hashes to a file
 
 //Native C Libraries
 #include <cstdlib>      //Contains exit()
@@ -29,7 +30,8 @@
 #include "permuter/permute.hpp"
 
 //External Libraries (dependencies)
-#include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
+// #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
+#include "hashlib++_md5/hashlibpp.h" //this directory contains a modified version of the hashlib++ library which only contains the code for md5. hopefully this will speed up compilation
 
 //Typedefs
 typedef std::unordered_map<std::string, std::optional<std::string>> passwd_hashmap; 
@@ -41,7 +43,8 @@ void load_hashes(passwd_hashmap& hashes, std::string filename);      //Load the 
 void crack_hashes(passwd_hashmap& hashes, std::string filename);    //(Attempt to) crack all the hashes
 void print_hashes(const passwd_hashmap& hashes);                   //Print all the hashes + cracked passwords as a table
 void crack_brute_hash(passwd_hashmap& hashes, const size_t& size = 5);   //(Attempt to) crack all the hashes with passwords of a given size 
-                                                                 //(probably dont want to run larger than 5 or youll have time to discover the cure to cancer)
+                                                                 //(probably dont want to run larger than 5 or youll have time to discover the cure to cancer)                                     
+void gen_hash_to_file(std::string& file_name, std::initializer_list<std::string> plaintext);         //Hashes plaintext
 
 // DRIVER CODE //
 int main(int argc, char* argv[])
@@ -196,7 +199,29 @@ void crack_brute_hash(passwd_hashmap& hashes, const size_t& size )
         if (hashes.find(password_hash) != hashes.end())
             hashes[password_hash] = password;
     }
+	// this code is duplicated because once the permuter reaches the end it loops back to "0"*size so this duplicate is needed to check if that is the password
+	std::cout << "Progress: " << ++counter << '\r';  // '\r' overwrites the current line, acting as a progress bar
+
+	std::string password_hash = std::move(md5hasher->getHashFromString(password));
+
+	if (hashes.find(password_hash) != hashes.end())
+		hashes[password_hash] = password;
+
     std::cout << '\n';
+}
+                                      
+void gen_hash_to_file(std::string& file_name, std::initializer_list<std::string> plaintext) { //Hashes plaintext and outputs to file
+
+	auto md5hasher = std::make_unique<md5wrapper>();
+	std::ofstream out_file(file_name);
+
+	if(out_file.good()) {
+		for(auto i : plaintext) {
+			out_file << md5hasher->getHashFromString(i) << "\n";
+		}
+	}
+	else
+		std::cout << "hashes not written. file is not good" << std::endl;
 }
 
 //Print a the map of the hashed passwords and the cracked passwords as a table
