@@ -26,6 +26,7 @@
 
 //Custom Libraries (by yours truly :D)
 #include "arg-parser/parser.hpp"
+#include "permuter/permute.hpp"
 
 //External Libraries (dependencies)
 #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
@@ -39,7 +40,8 @@ void process_args(int argc, arg_parser::Parser&);                     //Ensure t
 void load_hashes(passwd_hashmap& hashes, std::string filename);      //Load the hashes from the file
 void crack_hashes(passwd_hashmap& hashes, std::string filename);    //(Attempt to) crack all the hashes
 void print_hashes(const passwd_hashmap& hashes);                   //Print all the hashes + cracked passwords as a table
-
+void crack_brute_hash(passwd_hashmap& hashes, const size_t& size = 5);   //(Attempt to) crack all the hashes with passwords of a given size 
+                                                                 //(probably dont want to run larger than 5 or youll have time to discover the cure to cancer)
 
 // DRIVER CODE //
 int main(int argc, char* argv[])
@@ -57,11 +59,24 @@ int main(int argc, char* argv[])
 
     //Parse the commandline arguments
     parser.parse(argc, argv);
+<<<<<<< Updated upstream
 
     process_args(argc, parser);                                         //Validate the commandline arguments (check that a file WAS provided)
     load_hashes(hashes, parser["--hashfile"][0].data());               //Load in all the hashes from the file
     crack_hashes(hashes, "top-10-million-passwords.txt");             //Attempt to crack all the hashes
     print_hashes(hashes);                                            //Print all the hashes and their cracked equivalents as a table
+=======
+    process_args(argc, parser);                                    //Validate the commandline arguments (check that a file WAS provided)
+
+    //Variables
+    passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
+    // std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
+
+    load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
+    // crack_hashes(hashes, dictionary);                            //Attempt to crack all the hashes
+    crack_brute_hash(hashes, (size_t)5);
+	print_hashes(hashes);                                       //Print all the hashes and their cracked equivalents as a table
+>>>>>>> Stashed changes
 
     return 0;
 }
@@ -156,6 +171,27 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename)
 
     //Try every password in the password list
     while (std::getline(dictionary, password))
+    {
+        std::cout << "Progress: " << ++counter << '\r';  // '\r' overwrites the current line, acting as a progress bar
+
+        std::string password_hash = std::move(md5hasher->getHashFromString(password));
+
+        if (hashes.find(password_hash) != hashes.end())
+            hashes[password_hash] = password;
+    }
+    std::cout << '\n';
+}
+
+void crack_brute_hash(passwd_hashmap& hashes, const size_t& size )
+{   
+    //Variables
+    auto md5hasher = std::make_unique<md5wrapper>();       //MD5 Hash Generator
+    std::string password;                                 //Temp string to store a given password from the dictionary
+    unsigned long long counter = 0;                      //Counter -- how many passwords it's gone through
+	const std::string endOfPermuter(size, '0');         //Stores the string that corresponds to the end of the permuter. this feels hacky but it works for now
+
+    //Run through all combinations of N size strings and checking if they match the hash in hashes hashmap
+    for(password = Permute::gen_brute_str(size); password != endOfPermuter; password = Permute::gen_brute_str(size))
     {
         std::cout << "Progress: " << ++counter << '\r';  // '\r' overwrites the current line, acting as a progress bar
 
