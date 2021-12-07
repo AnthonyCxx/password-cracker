@@ -5,6 +5,12 @@ An MD5 password cracker built in C++17.
 - Compilation: `g17 main.cpp ./hashlib++/*.cpp`
 - Execution: `./a.out hashes.txt`
 
+# External Libraries
+| Library | Author | Used for |
+| ------- | ------ | -------- |
+| [hashlib++](http://hashlib2plus.sourceforge.net/) | Benjamin Grüdelbach | MD5 hashing algorithm | 
+| [cmdline-arg-parser](https://github.com/EthanC2/cmdline-arg-parser) | me | parsing commandline arguments/including program options |
+
 # Output and Piping
 Output goes to the console, which also means it can be redirected to a file. The output table is designed to be friendly for piping, so a simple `./a.out hashes.txt | awk 'NR > 3'` skips the progress counter and table header, giving you just the 
 original hashes and cracked passwords separated by a space. If a hash was not cracked, the space under the column _CRACKED PASSWORDS_ should be empty.

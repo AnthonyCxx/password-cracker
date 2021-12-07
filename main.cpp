@@ -26,7 +26,7 @@
 
 //Custom Libraries (by yours truly :D)
 #include "arg-parser/parser.hpp"
-#include "permutor/permute.hpp"
+#include "permuter/permute.hpp"
 
 //External Libraries (dependencies)
 #include "hashlib++/hashlibpp.h"  //Contains implmentations of MD5 and SHA-family hashing algorithms
@@ -51,21 +51,21 @@ int main(int argc, char* argv[])
                                 //Format:  cmd arg=string, # of parameters=uint, is_required=bool, description=string
                                 arg_parser::Argument("--help", 0, false, "displays the help screen"),            
                                 arg_parser::Argument("-h", 0, false, "displays the help screen"),                 
-                                arg_parser::Argument("--hashfile", 1, true, "takes the list of hashed passwords")   
+                                arg_parser::Argument("--hashfile", 1, true, "takes the list of hashed passwords"),   
+                                arg_parser::Argument("--dict", 1, false, "source dictionary of passwords")
                              );
-
-    //Variables
-    passwd_hashmap hashes;    //map of all the hashes to crack (password hash -> optional<cracked password value>)
-    // std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
 
     //Parse the commandline arguments
     parser.parse(argc, argv);
     process_args(argc, parser);                                    //Validate the commandline arguments (check that a file WAS provided)
 
+    //Variables
+    passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
+    std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
+
     load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
-    // crack_hashes(hashes, dictionary);                            //Attempt to crack all the hashes
-    crack_brute_hash(hashes, (size_t)5);
-	print_hashes(hashes);                                       //Print all the hashes and their cracked equivalents as a table
+    crack_hashes(hashes, dictionary);                            //Attempt to crack all the hashes
+    print_hashes(hashes);                                       //Print all the hashes and their cracked equivalents as a table
 
     return 0;
 }
@@ -127,7 +127,7 @@ void load_hashes(passwd_hashmap& hashes, std::string filename)
     std::string password;
 
     //Error-handling
-    if (!password_hashlist.good())
+    if (not password_hashlist.good())
     {
         std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 2...\n";
         exit(2);
@@ -152,7 +152,7 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename)
     unsigned long long counter = 0;                     //Counter -- how many passwords it's gone through
 
     //Validate dictionary file
-    if (!dictionary.good())
+    if (not dictionary.good())
     {
         std::clog << "***FATAL ERROR***: the file " << std::quoted(filename) << " could not be found. Exiting with status code 2...\n";
         exit(2);
