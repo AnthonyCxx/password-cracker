@@ -33,3 +33,5 @@
 
 .vscode/*
 !.vscode/**
+test.txt
+.vscode/settings.json
