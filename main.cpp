@@ -52,7 +52,8 @@ int main(int argc, char* argv[])
                                 arg_parser::Argument("--help", 0, false, "displays the help screen"),            
                                 arg_parser::Argument("-h", 0, false, "displays the help screen"),                 
                                 arg_parser::Argument("--hashfile", 1, true, "takes the list of hashed passwords"),   
-                                arg_parser::Argument("--dict", 1, false, "source dictionary of passwords")
+                                arg_parser::Argument("--dict", 1, false, "source dictionary of passwords"),
+								arg_parser::Argument("--brute", 1, false, "runs the brute force algorithm which does not require a dictionary. 1 arg: size of password")
                              );
 
     //Parse the commandline arguments
@@ -62,9 +63,15 @@ int main(int argc, char* argv[])
     //Variables
     passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
     std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
+	size_t size = (parser["--brute"].is_set() ? static_cast<size_t>(parser["--brute"][0].data()[0] - '0') : (size_t)5); // I think i hate myself for writing this. I highly doubt this is type safe at all but ¯\_(ツ)_/¯
 
     load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
-    crack_hashes(hashes, dictionary);                            //Attempt to crack all the hashes
+
+	if(parser["--brute"].is_set())
+		crack_brute_hash(hashes, size);
+	else
+    	crack_hashes(hashes, dictionary);                       //Attempt to crack all the hashes
+
     print_hashes(hashes);                                       //Print all the hashes and their cracked equivalents as a table
 
     return 0;
@@ -111,7 +118,7 @@ inline void process_args(int argc, arg_parser::Parser& parser)
     parser.validate_args();
 
     //Make sure the user provided a file
-    if (not parser["--hashfile"].is_set())
+    if (! parser["--hashfile"].is_set())
     {
         std::clog << "usage: ./a.out <password_hashlist>\n";
         exit(1);
