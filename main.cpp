@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
                                 arg_parser::Argument("-h", 0, false, "displays the help screen"),                 
                                 arg_parser::Argument("--hashfile", 1, true, "takes the list of hashed passwords"),   
                                 arg_parser::Argument("--dict", 1, false, "source dictionary of passwords"),
-								arg_parser::Argument("--brute", 1, false, "runs the brute force algorithm which does not require a dictionary. 1 arg: size of password")
+				arg_parser::Argument("--brute", 1, false, "runs the brute force algorithm which does not require a dictionary. 1 arg: size of password")
                              );
 
     //Parse the commandline arguments
