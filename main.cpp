@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     //Variables
     passwd_hashmap hashes;  //map of all the hashes to crack (password hash -> optional<cracked password value>)
     std::string dictionary = (parser["--dict"].is_set() ? parser["--dict"][0].data() : "top-10-million-passwords.txt");
-	size_t size = (parser["--brute"].is_set() ? std::stoi(parser["--brute"][0].data()) : (size_t)5);
+    size_t size = (parser["--brute"].is_set() ? std::stoi(parser["--brute"][0].data()) : (size_t)5);
 
     load_hashes(hashes, parser["--hashfile"][0].data());          //Load in all the hashes from the file
 
