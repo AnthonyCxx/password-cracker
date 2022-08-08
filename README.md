@@ -1,5 +1,5 @@
 # Password Cracker in C++
-An MD5 password cracker built in C++17.
+A simple MD5 hash password cracker made as a project on hashing for our alogrithm's class.
 
 # Compilatition and Execution
 - Compilation: `g17 main.cpp ./hashlib++/*.cpp`
@@ -22,4 +22,4 @@ The process for cracking the passwords is pretty straight-forward.
 3. Print all the password hashes and the uncovered passwords (where `std::optional<std::string>` has a value)
 
 # License
-This project is available under an MIT license; by using this password cracker, you agree to take full responsiblity for how you use it.
+This project is available under an MIT license; by using this password cracker, you agree to take full responsiblity for any and all legal reprecussions.
