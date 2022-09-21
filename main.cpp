@@ -150,6 +150,8 @@ void load_hashes(passwd_hashmap& hashes, std::string filename)
         //Move the hashed password into the map, along with an empty std::optional<> object
         hashes.insert({std::move(password), std::nullopt});
     }
+	
+    password_hashlist.close();
 }
 
 
@@ -180,6 +182,8 @@ void crack_hashes(passwd_hashmap& hashes, std::string filename)
             hashes[password_hash] = password;
     }
     std::cout << '\n';
+
+   dictionary.close();
 }
 
 void crack_brute_hash(passwd_hashmap& hashes, const size_t& size )
@@ -223,6 +227,8 @@ void gen_hash_to_file(std::string& file_name, std::initializer_list<std::string>
 	}
 	else
 		std::cout << "hashes not written. file is not good" << std::endl;
+	
+	out_file.close();
 }
 
 //Print a the map of the hashed passwords and the cracked passwords as a table
